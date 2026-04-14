@@ -1,4 +1,4 @@
-# Collaborator Guide — otreesurvey
+# Collaborator Guide
 
 This document describes the overall structure, the six core
 experiment pages, and which parts are not in active use.
@@ -169,11 +169,11 @@ experimental pages that can be ignored when building new functionality:
 - `MapEdgeCreation`, `MapEdgeReview`, `MapPractice` — earlier canvas interaction variants
 - `MapProximity` — experimental auto-edge generation from node proximity
 - `MapVideoIntro`, `MapIntro` — intro/tutorial pages still in sequence but essentially pass-through
-- `VEMI`, `MEMI` — mental imagery measures, not part of current study
+- `VEMI`, `MEMI` — meat eating measures, not part of current study
 - `MeatScale` — single-item scale, not in current flow
 - `Plausibility` — plausibility rating, not in current flow
 - `InterventionDisplay`, `InterventionRating` — intervention conditions, defined in `interventions.py`, not currently used
-- `PairInterview`, `PairInterviewLLM` — paired interview variants, not used
+- `PairInterview`, `PairInterviewLLM` — pairwise interview variants, not used
 - `PreviewInfo`, `PreviewTransition` — Prolific preview pages, not in active sequence
 - `InterviewTest` — development/testing page
 
