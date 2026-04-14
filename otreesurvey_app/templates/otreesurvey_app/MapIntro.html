@@ -1,0 +1,134 @@
+{% extends "global/Page.html" %} {% block styles %}
+<style>
+  .card {
+    border: 1px solid #e6e6e6;
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    margin: 0 auto 14px;
+    max-width: 900px;
+  }
+  .eyebrow {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 6px;
+  }
+  .muted {
+    color: #555;
+  }
+  .items {
+    margin: 10px 0 0;
+    padding-left: 1.25rem;
+  }
+  .items li {
+    margin: 6px 0;
+    line-height: 1.3;
+    color: #111;
+    font-weight: 600;
+  }
+  .transcript-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  .transcript-list li {
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+  }
+  .chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #111;
+    font-weight: 700;
+  }
+  .chip-purple { background: #e9e3f5; }
+  .chip-orange { background: #fff1de; }
+  .chip-red    { background: #fde0d0; color: #b71c1c; border-color: #e57373; }
+  .chip-green  { background: #d4edda; color: #1b5e20; border-color: #66bb6a; }
+</style>
+{% endblock %} {% block content %}
+
+
+<div class="card">
+  <p class="eyebrow">Next: working with your own statements</p>
+  {% if noprefix %}
+  <p class="muted">
+    Thank you for completing the statements and rating how important each one is
+    to your meat-eating behavior. In the next steps, you will first
+    <b>place</b> the statements based on how they go together for you personally.
+    Then you will create <span class="chip chip-purple">supporting</span> and
+    <span class="chip chip-orange">conflicting</span> connections between them.
+    The color of each circle shows how you rated it —
+    <span class="chip chip-red">disagree</span> or
+    <span class="chip chip-green">agree</span>.
+  </p>
+  {% else %}
+  <p class="muted">
+    Thank you for completing the statements and rating how important each one is
+    to your meat-eating behavior. In the next steps, you will first
+    <b>place</b> the statements based on how they go together for you personally.
+    Then you will create <span class="chip chip-purple">supporting</span> and
+    <span class="chip chip-orange">conflicting</span> connections between them.
+  </p>
+  {% endif %}
+</div>
+
+{% if show_transcript %}
+<div class="card">
+  <p class="eyebrow">Your interview transcript</p>
+  <p class="muted">
+    Below you can see the questions and answers from your interview for your
+    reference.
+  </p>
+  <ul class="transcript-list">
+    {% for pair in transcript %}
+    <li>
+      <strong>Q:</strong> {{ pair.question }}<br />
+      <strong>A:</strong> {{ pair.answer }}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if noprefix %}
+<div class="card">
+  <p class="eyebrow">Your statements</p>
+  <p class="muted">
+    The statements you completed are shown below. Each circle is colored to show
+    your rating — <span class="chip chip-red">disagree</span> or
+    <span class="chip chip-green">agree</span>. The circles in the next task
+    use the same colors.
+  </p>
+  <ul style="list-style:none; padding:0; margin:10px 0 0;">
+    {% for stmt in own_statements_colored %}
+    <li style="display:flex; align-items:center; gap:10px; margin:8px 0;">
+      <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:{{ stmt.color }}; flex-shrink:0;"></span>
+      <span style="font-weight:600; color:#111;">{{ stmt.text }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% else %}
+<div class="card">
+  <p class="eyebrow">Your statements</p>
+  <p class="muted">
+    The statements you completed are shown below. Some have been simplified
+    slightly to make the next task easier to work with: wherever you selected a
+    "disagree" option the statement now reads <b>disagree</b>, and wherever you
+    selected an "agree" option it reads <b>agree</b>.
+  </p>
+  <ol class="items">
+    {% for stmt in own_statements %}
+    <li>{{ stmt }}</li>
+    {% endfor %}
+  </ol>
+</div>
+{% endif %}
+
+{{ next_button }} {% endblock %}

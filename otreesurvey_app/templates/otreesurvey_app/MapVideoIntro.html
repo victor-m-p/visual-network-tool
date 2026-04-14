@@ -1,0 +1,124 @@
+{% extends "global/Page.html" %} {% load static %} {% block styles %}
+<style>
+  .card {
+    border: 1px solid #e6e6e6;
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    margin: 0 auto 14px;
+    max-width: 900px;
+  }
+  .eyebrow {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 6px;
+  }
+  .muted {
+    color: #555;
+    margin: 0 0 10px;
+  }
+  .chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #111;
+    font-weight: 700;
+  }
+  .chip-purple {
+    background: #e9e3f5;
+    border-color: #c5b8e8;
+  }
+  .chip-orange {
+    background: #fff1de;
+    border-color: #f5c97a;
+  }
+  .chip-red {
+    background: #fde0d0;
+    color: #b71c1c;
+    border-color: #e57373;
+  }
+  .chip-green {
+    background: #d4edda;
+    color: #1b5e20;
+    border-color: #66bb6a;
+  }
+  .task-list {
+    margin: 8px 0 0;
+    padding-left: 1.4rem;
+  }
+  .task-list li {
+    margin: 10px 0;
+    line-height: 1.5;
+    color: #111;
+  }
+</style>
+{% endblock %} {% block content %}
+
+<div class="card">
+  <p class="eyebrow">What you will be doing in the next steps</p>
+  <ol class="task-list">
+    <li>
+      <b>Place statements</b>: You will drag the statements you created into a
+      box and place things that "go together" closer to each other. For
+      instance, place things that seem more similar or related to you closer
+      together. Try to use the whole box for this task and avoid placing all
+      statements on top of each other.
+    </li>
+    <li>
+      Draw <span class="chip chip-purple">supporting</span>
+      <b>connections</b> between statements. For example if they reinforce or
+      encourage each other. You will indicate how clear or strong each
+      connection is on a scale. You can use high ratings for connections that
+      feel very clear and strong to you, and low ratings for connections that
+      you still feel but are more uncertain about.
+    </li>
+    <li>
+      Draw <span class="chip chip-orange">conflicting</span>
+      <b>connections</b> between statements. For example if they undermine or
+      contradict each other. You will indicate how clear or strong each
+      connection is on a scale, as with the supporting connections.
+    </li>
+  </ol>
+</div>
+
+<div class="card">
+  <p class="eyebrow">Example statements used in the video</p>
+  <p class="muted">
+    The video below uses these example statements about learning Spanish.
+    <span class="chip chip-green">Green</span> circles are statements the
+    example person agreed with; <span class="chip chip-red">red</span> circles
+    are statements they disagreed with. On the next pages, you will do the tasks
+    shown in the video with the statements you just created yourself.
+  </p>
+  <ul style="list-style: none; padding: 0; margin: 10px 0 0">
+    {% for stmt in own_statements_colored %}
+    <li style="display: flex; align-items: center; gap: 10px; margin: 8px 0">
+      <span
+        style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: {{ stmt.color }}; flex-shrink: 0;"
+      ></span>
+      <span style="font-weight: 600; color: #111">{{ stmt.text }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <p class="eyebrow">Watch before you start</p>
+  <p class="muted">
+    Please watch this short video (under 1 minute) that shows how to do this
+    using an example of learning Spanish. When you have finished watching, click
+    the "Next" button to start the first task with your own statements.
+  </p>
+  <video controls style="width: 100%; border-radius: 8px">
+    <source
+      src="{% static 'otreesurvey_app/demo_canvas.mp4' %}"
+      type="video/mp4"
+    />
+  </video>
+</div>
+
+{{ next_button }} {% endblock %}

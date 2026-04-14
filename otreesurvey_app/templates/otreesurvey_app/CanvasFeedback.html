@@ -1,0 +1,239 @@
+{% extends "global/Page.html" %} {% block styles %}
+<style>
+  .fb-card {
+    border: 1px solid #e6e6e6;
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .fb-card h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+    color: #111;
+  }
+  .fb-card .sub {
+    font-size: 0.88rem;
+    color: #555;
+    margin: 0 0 1.1rem;
+  }
+
+  .fb-item {
+    margin-bottom: 1.4rem;
+  }
+  .fb-item:last-child {
+    margin-bottom: 0;
+  }
+  .fb-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #111;
+    margin-bottom: 0.3rem;
+  }
+  .scale-anchors {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #777;
+    margin-bottom: 3px;
+  }
+  .fb-slider {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #e0e0e0;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+  }
+  .fb-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: #bbb;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .fb-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: #bbb;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .fb-slider.active::-webkit-slider-thumb { background: #111; }
+  .fb-slider.active::-moz-range-thumb     { background: #111; }
+  .fb-readout {
+    font-size: 0.83rem;
+    color: #999;
+    margin-top: 3px;
+    min-height: 16px;
+  }
+
+  .comment-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #111;
+    margin-bottom: 0.35rem;
+  }
+  textarea.fb-comment {
+    width: 100%;
+    min-height: 80px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    color: #111;
+    resize: vertical;
+    box-sizing: border-box;
+  }
+</style>
+{% endblock %} {% block content %}
+
+<div class="fb-card">
+  <h3>A few quick questions about the task</h3>
+  <p class="sub">
+    Please answer a few questions to help us improve this study. There are no
+    right or wrong answers. Please rate how the task actually felt to you. Any
+    comment that you have about your experience is greatly appreciated and useful
+    to us.
+  </p>
+
+  <!-- 1. Arranging statements -->
+  <div class="fb-item">
+    <div class="fb-label">How easy or difficult was it to <b>arrange the statements</b> on the map?</div>
+    <div class="scale-anchors"><span>Very difficult</span><span>Very easy</span></div>
+    <input type="range" class="fb-slider" id="sl_placement" min="1" max="7" step="1" value="4">
+    <div class="fb-readout" id="rd_placement">Please move the slider</div>
+    <input type="hidden" name="canvas_difficulty_placement" id="canvas_difficulty_placement">
+  </div>
+
+  <!-- 2. Supporting connections -->
+  <div class="fb-item">
+    <div class="fb-label">How easy or difficult was it to draw <b>supporting connections</b>?</div>
+    <div class="scale-anchors"><span>Very difficult</span><span>Very easy</span></div>
+    <input type="range" class="fb-slider" id="sl_pos" min="1" max="7" step="1" value="4">
+    <div class="fb-readout" id="rd_pos">Please move the slider</div>
+    <input type="hidden" name="canvas_difficulty_pos" id="canvas_difficulty_pos">
+  </div>
+
+  <!-- 3. Conflicting connections -->
+  <div class="fb-item">
+    <div class="fb-label">How easy or difficult was it to draw <b>conflicting connections</b>?</div>
+    <div class="scale-anchors"><span>Very difficult</span><span>Very easy</span></div>
+    <input type="range" class="fb-slider" id="sl_neg" min="1" max="7" step="1" value="4">
+    <div class="fb-readout" id="rd_neg">Please move the slider</div>
+    <input type="hidden" name="canvas_difficulty_neg" id="canvas_difficulty_neg">
+  </div>
+
+  <!-- 4. Statement clarity -->
+  <div class="fb-item">
+    <div class="fb-label">How <b>clear and understandable</b> were the statements themselves?</div>
+    <div class="scale-anchors"><span>Not at all clear</span><span>Completely clear</span></div>
+    <input type="range" class="fb-slider" id="sl_clarity" min="1" max="7" step="1" value="4">
+    <div class="fb-readout" id="rd_clarity">Please move the slider</div>
+    <input type="hidden" name="canvas_clarity_statements" id="canvas_clarity_statements">
+  </div>
+</div>
+
+<div class="fb-card">
+  <div class="comment-label">Any other comments about the task? <span style="font-weight:400; color:#888;">(optional)</span></div>
+  <textarea class="fb-comment" name="canvas_usability_comment" id="canvas_usability_comment"
+    placeholder="e.g. something was confusing, something did not work..."></textarea>
+</div>
+
+<div id="error-msg" style="display:none; color:red; margin-bottom:1rem; font-weight:700;">
+  Please answer all four questions before continuing.
+</div>
+
+{{ next_button }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const ITEMS = [
+    { slider: 'sl_placement', readout: 'rd_placement', hidden: 'canvas_difficulty_placement' },
+    { slider: 'sl_pos',       readout: 'rd_pos',       hidden: 'canvas_difficulty_pos'       },
+    { slider: 'sl_neg',       readout: 'rd_neg',       hidden: 'canvas_difficulty_neg'       },
+    { slider: 'sl_clarity',   readout: 'rd_clarity',   hidden: 'canvas_clarity_statements'   },
+  ];
+
+  const DIFFICULTY_LABELS = {
+    1: 'Very difficult', 2: 'Difficult', 3: 'Somewhat difficult',
+    4: 'Neutral', 5: 'Somewhat easy', 6: 'Easy', 7: 'Very easy',
+  };
+  const CLARITY_LABELS = {
+    1: 'Not at all clear', 2: 'Slightly clear', 3: 'Somewhat clear',
+    4: 'Moderately clear', 5: 'Mostly clear', 6: 'Very clear', 7: 'Completely clear',
+  };
+
+  const touched = new Set();
+
+  function paintFromLeft(slider, value) {
+    const pct = ((value - 1) / 6) * 100;
+    slider.style.background =
+      `linear-gradient(to right, #424242 0%, #424242 ${pct}%, #e0e0e0 ${pct}%, #e0e0e0 100%)`;
+  }
+
+  ITEMS.forEach(function (cfg, idx) {
+    const slider  = document.getElementById(cfg.slider);
+    const readout = document.getElementById(cfg.readout);
+    const hidden  = document.getElementById(cfg.hidden);
+    const isClarity = (cfg.slider === 'sl_clarity');
+    const LABELS = isClarity ? CLARITY_LABELS : DIFFICULTY_LABELS;
+
+    function activate() {
+      slider.classList.add('active');
+      const v = Number(slider.value);
+      paintFromLeft(slider, v);
+      readout.textContent = LABELS[v];
+      readout.style.color = '#111';
+      hidden.value = v;
+      touched.add(idx);
+      updateNext();
+    }
+
+    slider.addEventListener('pointerdown', activate);
+    slider.addEventListener('input', function () {
+      if (slider.classList.contains('active')) {
+        const v = Number(slider.value);
+        paintFromLeft(slider, v);
+        readout.textContent = LABELS[v];
+        hidden.value = v;
+      }
+    });
+  });
+
+  const nextBtn = document.getElementById('nextButton') || document.querySelector('.otree-btn-next');
+  if (nextBtn) {
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.5';
+    nextBtn.style.pointerEvents = 'none';
+  }
+
+  function updateNext() {
+    if (!nextBtn) return;
+    const ok = touched.size >= ITEMS.length;
+    nextBtn.disabled = !ok;
+    nextBtn.style.opacity = ok ? '1' : '0.5';
+    nextBtn.style.pointerEvents = ok ? 'auto' : 'none';
+    if (ok) document.getElementById('error-msg').style.display = 'none';
+  }
+
+  document.querySelector('form').addEventListener('submit', function (e) {
+    if (touched.size < ITEMS.length) {
+      e.preventDefault();
+      document.getElementById('error-msg').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+});
+</script>
+
+{% endblock %}

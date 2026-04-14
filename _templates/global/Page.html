@@ -1,0 +1,10 @@
+{% extends "otree/Page.html" %}
+
+{% block global_styles %}
+    {# Disable Dark Reader and other dark-mode extensions for all pages #}
+    <meta name="darkreader-lock">
+    <style>
+        :root { color-scheme: only light; }
+    </style>
+    {{ super() }}
+{% endblock %}

@@ -1,0 +1,31 @@
+textarea {
+  height: 200px !important;
+  resize: vertical;
+  width: 100%;
+  font-size: 18px !important;
+  font-family: sans-serif;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+body {
+  font-size: 22px;
+  line-height: 1.6;
+  color-scheme: light;
+}
+
+#progress-container {
+  width: 100%;
+  background-color: #e6e6e6;
+  border-radius: 8px;
+  height: 14px;
+  margin-bottom: 20px; /* space before page content */
+  overflow: hidden;
+}
+
+#progress-bar {
+  height: 100%;
+  background-color: #4caf50; /* green or match your theme */
+  border-radius: 8px;
+  transition: width 0.3s ease;
+}

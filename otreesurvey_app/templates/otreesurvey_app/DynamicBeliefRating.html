@@ -1,0 +1,385 @@
+{% extends "global/Page.html" %} {% load otree %} {% block styles %}
+<style>
+  .instructions {
+    border: 1px solid #e6e6e6;
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .instructions .muted {
+    color: #555;
+  }
+
+  .dynamic-row {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #e6e6e6;
+  }
+  .dynamic-row:nth-of-type(even) {
+    background: #f7f7f7;
+  }
+
+  .sentence-display {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #111;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    min-height: 2em;
+    transition: font-size 0.15s ease;
+  }
+
+  /* The highlighted fill-in word inside brackets */
+  .scale-token {
+    display: inline-block;
+    background: #fff3b0;
+    border: 1.5px solid #e6c200;
+    border-radius: 4px;
+    padding: 0 5px;
+    font-style: italic;
+    color: #555;
+    letter-spacing: 0.04em;
+    transition:
+      background 0.15s,
+      color 0.15s,
+      border-color 0.15s;
+  }
+  .scale-token.active {
+    font-style: normal;
+    font-weight: 700;
+  }
+  .scale-token.disagree { background: #fde0d0; border-color: #d73027; color: #7f1111; }
+  .scale-token.agree    { background: #d4edda; border-color: #41ab5d; color: #155724; }
+
+  .scale-anchors {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .likert-slider {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #e0e0e0;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+  }
+  .likert-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: #bbb;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .likert-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: #bbb;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .likert-slider::-moz-range-track {
+    height: 10px;
+    border-radius: 5px;
+    background: transparent;
+  }
+  .likert-slider.active::-webkit-slider-thumb {
+    background: #111;
+  }
+  .likert-slider.active::-moz-range-thumb {
+    background: #111;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="instructions">
+  <h3>Complete each statement</h3>
+  <p class="muted">
+    Move the slider to find the words that best describe your own views and
+    habits around eating meat. The highlighted
+    <span class="scale-token" style="font-size: 0.9rem">&nbsp;word&nbsp;</span>
+    will update as you drag.
+  </p>
+  <p class="muted" style="margin-top: 0.5rem">
+    Try to be as careful and honest as possible when creating your statements.
+    The statements that you create will represent your personal perspective in
+    the next part of the study. The next part of the study will be easier and
+    more meaningful if each statement truly reflects your own views and habits.
+  </p>
+  {% if show_importance == "true" %}
+  <p class="muted" style="margin-top: 0.5rem">
+    For each statement, also rate <b>how important</b> it is to your meat-eating
+    <small
+      >(1 = Not at all important &nbsp;·&nbsp; 7 = Extremely important)</small
+    >. For this rating, consider how much each statement influences whether you
+    eat meat or not, and how much.
+  </p>
+  {% endif %}
+</div>
+
+<input
+  type="hidden"
+  name="dynamic_belief_ratings_json"
+  id="dynamic_belief_ratings_json"
+  value=""
+/>
+
+<div id="items-container"></div>
+
+<div
+  id="error-message"
+  style="display: none; color: red; margin: 1rem 0; font-weight: 700"
+>
+  Please complete all sentences before continuing.
+</div>
+{{ next_button }}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const ITEMS           = {{ items_json }};
+    const SHOW_IMPORTANCE = {{ show_importance }};
+    const SCALE_MAX       = {{ scale_max }};
+    const START_VAL       = {{ start_val }};
+
+    const container  = document.getElementById('items-container');
+    const touched    = new Set();
+    const PRISTINE_TEXT = '···';
+
+    // Agreement colour map — matches _AGREEMENT_COLORS in __init__.py
+    const AGREE_COLORS = {
+      1: '#d73027', 2: '#f46d43', 3: '#fdae61',
+      4: '#a1d99b', 5: '#41ab5d', 6: '#006d2c',
+    };
+
+    function applyAgreementColor(row, sentenceEl, tokenEl, v) {
+      const disagree = v <= 3;
+      tokenEl.classList.toggle('disagree', disagree);
+      tokenEl.classList.toggle('agree',    !disagree);
+      const bg = disagree
+        ? 'rgba(215,48,39,0.06)'   // faint red tint
+        : 'rgba(65,171,93,0.08)';  // faint green tint
+      sentenceEl.style.color = AGREE_COLORS[v] || '#111';
+      row.style.backgroundColor = bg;
+    }
+
+    const IMPORTANCE_LABELS = {
+      1: 'Not at all important',
+      2: 'Slightly important',
+      3: 'Somewhat important',
+      4: 'Moderately important',
+      5: 'Important',
+      6: 'Very important',
+      7: 'Extremely important',
+    };
+
+    function importanceFontSize(v) {
+      // v 1–6 → 0.85rem–1.35rem, step 0.1rem
+      return (0.85 + (v - 1) * 0.1).toFixed(2) + 'rem';
+    }
+
+    function paintFromLeft(slider, value) {
+      const v   = Math.max(1, Math.min(SCALE_MAX, Number(value)));
+      const pct = ((v - 1) / (SCALE_MAX - 1)) * 100;
+      slider.style.background =
+        `linear-gradient(to right, #424242 0%, #424242 ${pct}%, #e0e0e0 ${pct}%, #e0e0e0 100%)`;
+    }
+
+    function buildParts(template, labels, value, pristine) {
+      // Split template on [SCALE] to get before/after text
+      const parts = template.split('[SCALE]');
+      const before = parts[0];
+      const after  = parts[1] || '';
+      const word   = pristine ? PRISTINE_TEXT : labels[String(value)];
+
+      // Capitalise first letter of whole sentence
+      let beforeCap = before;
+      if (before === '') {
+        // [SCALE] is at the start — capitalise the word
+        return { before: '', word: pristine ? PRISTINE_TEXT : (word.charAt(0).toUpperCase() + word.slice(1)), after };
+      } else {
+        beforeCap = before.charAt(0).toUpperCase() + before.slice(1);
+        return { before: beforeCap, word, after };
+      }
+    }
+
+    function renderSentence(sentenceEl, tokenEl, template, labels, value, pristine) {
+      const { before, word, after } = buildParts(template, labels, value, pristine);
+      // Update only the token text so surrounding text doesn't flicker
+      sentenceEl.childNodes[0].textContent = before;
+      tokenEl.textContent = word;
+      sentenceEl.childNodes[2].textContent = after;
+
+      if (pristine) {
+        tokenEl.classList.remove('active');
+      } else {
+        tokenEl.classList.add('active');
+      }
+    }
+
+    // Each item needs sentence slider + optionally importance slider
+    const REQUIRED = ITEMS.length * (SHOW_IMPORTANCE ? 2 : 1);
+
+    function updateNext() {
+      const btn = document.getElementById('nextButton') || document.querySelector('.otree-btn-next');
+      if (!btn) return;
+      const ok = touched.size >= REQUIRED;
+      btn.disabled            = !ok;
+      btn.style.opacity       = ok ? '1' : '0.5';
+      btn.style.pointerEvents = ok ? 'auto' : 'none';
+    }
+
+    ITEMS.forEach(function (item, i) {
+      const row = document.createElement('div');
+      row.className = 'dynamic-row';
+
+      // Build sentence node with a text-node / token / text-node structure
+      const sentenceEl = document.createElement('div');
+      sentenceEl.className = 'sentence-display';
+
+      const tokenEl = document.createElement('span');
+      tokenEl.className = 'scale-token';
+      tokenEl.textContent = PRISTINE_TEXT;
+
+      const { before, word, after } = buildParts(item.template, item.labels, START_VAL, true);
+      sentenceEl.appendChild(document.createTextNode(before));
+      sentenceEl.appendChild(tokenEl);
+      sentenceEl.appendChild(document.createTextNode(after));
+
+      const anchorsEl = document.createElement('div');
+      anchorsEl.className = 'scale-anchors';
+      anchorsEl.innerHTML = `<span>${item.anchor_lo}</span><span>${item.anchor_hi}</span>`;
+
+      const slider = document.createElement('input');
+      slider.type      = 'range';
+      slider.className = 'likert-slider';
+      slider.id        = `slider_${i}`;
+      slider.min       = 1;
+      slider.max       = SCALE_MAX;
+      slider.step      = 1;
+      slider.value     = START_VAL;
+      // No painted track until first touch
+      slider.style.background = '#e0e0e0';
+
+      row.appendChild(sentenceEl);
+      row.appendChild(anchorsEl);
+      row.appendChild(slider);
+
+      // Importance slider (condition C only)
+      let impSlider = null;
+      if (SHOW_IMPORTANCE) {
+        const impLabel = document.createElement('div');
+        impLabel.style.cssText = 'font-size:0.9rem; font-weight:600; color:#333; margin-top:0.9rem; margin-bottom:4px;';
+        impLabel.textContent = 'How important is this to your meat-eating?';
+
+        const impAnchors = document.createElement('div');
+        impAnchors.className = 'scale-anchors';
+        impAnchors.innerHTML = '<span>Not at all important</span><span>Extremely important</span>';
+
+        impSlider = document.createElement('input');
+        impSlider.type      = 'range';
+        impSlider.className = 'likert-slider';
+        impSlider.id        = `imp_slider_${i}`;
+        impSlider.min = 1; impSlider.max = SCALE_MAX; impSlider.step = 1;
+        impSlider.value = START_VAL;
+        impSlider.style.background = '#e0e0e0';
+
+        const impReadout = document.createElement('div');
+        impReadout.id = `imp_readout_${i}`;
+        impReadout.style.cssText = 'font-size:0.85rem; color:#999; min-height:16px;';
+        impReadout.textContent = 'Please move the slider';
+
+        row.appendChild(impLabel);
+        row.appendChild(impAnchors);
+        row.appendChild(impSlider);
+        row.appendChild(impReadout);
+
+        let impPristine = true;
+        function activateImp() {
+          impPristine = false;
+          impSlider.classList.add('active');
+          const v = Number(impSlider.value);
+          paintFromLeft(impSlider, v);
+          impReadout.innerHTML = `Selected: <b>${IMPORTANCE_LABELS[v]}</b> &nbsp;(${v}/7)`;
+          impReadout.style.color = '#111';
+          sentenceEl.style.fontSize = importanceFontSize(v);
+          touched.add(`imp_${i}`);
+          updateNext();
+        }
+        impSlider.addEventListener('pointerdown', activateImp);
+        impSlider.addEventListener('input', function () {
+          if (!impPristine) {
+            const v = Number(impSlider.value);
+            paintFromLeft(impSlider, v);
+            impReadout.innerHTML = `Selected: <b>${IMPORTANCE_LABELS[v]}</b> &nbsp;(${v}/7)`;
+            sentenceEl.style.fontSize = importanceFontSize(v);
+          }
+        });
+      }
+
+      container.appendChild(row);
+
+      let pristine = true;
+
+      function activate() {
+        if (pristine) {
+          pristine = false;
+          slider.classList.add('active');
+        }
+        const v = Number(slider.value);
+        paintFromLeft(slider, v);
+        renderSentence(sentenceEl, tokenEl, item.template, item.labels, v, false);
+        applyAgreementColor(row, sentenceEl, tokenEl, v);
+        touched.add(i);
+        updateNext();
+      }
+
+      slider.addEventListener('pointerdown', activate);
+      slider.addEventListener('input', function () {
+        if (!pristine) {
+          const v = Number(slider.value);
+          paintFromLeft(slider, v);
+          renderSentence(sentenceEl, tokenEl, item.template, item.labels, v, false);
+          applyAgreementColor(row, sentenceEl, tokenEl, v);
+        }
+      });
+    });
+
+    updateNext();
+
+    document.querySelector('form').addEventListener('submit', function (e) {
+      if (touched.size < ITEMS.length) {
+        e.preventDefault();
+        document.getElementById('error-message').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const ratings = ITEMS.map(function (item, i) {
+        const slider = document.getElementById(`slider_${i}`);
+        const v = Number(slider.value);
+        const { before, word, after } = buildParts(item.template, item.labels, v, false);
+        const entry = { id: item.id, value: v, sentence: (before + word + after).trim() };
+        if (SHOW_IMPORTANCE) {
+          const imp = document.getElementById(`imp_slider_${i}`);
+          entry.importance = imp ? Number(imp.value) : null;
+        }
+        return entry;
+      });
+      document.getElementById('dynamic_belief_ratings_json').value = JSON.stringify(ratings);
+    });
+
+  });
+</script>
+
+{% endblock %}

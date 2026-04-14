@@ -1,0 +1,36 @@
+# Environment / secrets
+.env
+*.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+otree-env/
+venv/
+.venv/
+env/
+
+# oTree / Django
+db.sqlite3
+*.sqlite3
+otree_data/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/

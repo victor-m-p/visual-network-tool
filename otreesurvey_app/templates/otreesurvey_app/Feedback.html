@@ -1,0 +1,42 @@
+{% extends "global/Page.html" %} {% block styles %}
+<style>
+  .instruction-card {
+    border: 1px solid #e6e6e6;
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+  .eyebrow {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0.25rem 0 0.5rem 0;
+  }
+  textarea {
+    width: 100%;
+    min-height: 140px;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 1rem;
+    resize: vertical;
+  }
+  textarea:focus {
+    outline: 2px solid #111;
+    outline-offset: 2px;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="instruction-card">
+  <p class="eyebrow">Any comments?</p>
+  <p>
+    Do you have any comments about the study? We welcome any thoughts — for
+    example, if something was unclear, did not work as expected, felt
+    repetitive, or stood out as interesting. This field is optional.
+  </p>
+  {{ formfield 'final_feedback' }}
+</div>
+
+{{ next_button }} {% endblock %}

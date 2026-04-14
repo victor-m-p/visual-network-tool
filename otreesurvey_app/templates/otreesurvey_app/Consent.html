@@ -1,0 +1,91 @@
+{% extends "global/Page.html" %} {% block styles %}
+<link rel="stylesheet" href="{{ static 'global.css' }}" />
+{% endblock %} {% block content %}
+
+<div class="card bg-light m-3">
+  <div class="card-body">
+    <p>Dear participant,</p>
+
+    <p>{{ consent_intro }}</p>
+
+    <p>
+      <b>{{ consent_highlight }}</b> You may refuse or withdraw your consent at
+      any time.
+    </p>
+
+    <button id="toggle-btn" class="btn btn-primary" type="button">
+      Read more
+    </button>
+
+    <div id="more-text" style="display: none; margin-top: 1em">
+      <p>
+        This study has been reviewed by the ethics committee of the Technical
+        University of Vienna. You are being asked to take part because you are
+        at least 18 years old.
+      </p>
+
+      <p>
+        There are no foreseeable risks associated with this study, but some
+        individuals may experience discomfort. You may withdraw from the study
+        at any time without penalty and may also ask us to remove your data. If
+        you have any negative experiences during the study, please contact the
+        study coordinators Mirta Galesic and Victor Møller Poulsen at
+        <a href="mailto:collectivemindslab@gmail.com"
+          >collectivemindslab@gmail.com</a
+        >.
+      </p>
+
+      <p>
+        All metadata that could identify you, such as your Prolific ID, will be
+        kept strictly confidential and stored separately from your survey
+        responses. It will not be included in any published or shared data.
+      </p>
+
+      <p>
+        Your fully anonymised data may be analysed and shared in an Open Data
+        Repository, accessible to other researchers for non-commercial,
+        scientific use. This complies with EU data protection policies and
+        supports transparency and reproducibility in academic research.
+      </p>
+
+      <p>
+        If you complete the study but decide you want your data removed, please
+        contact us at
+        <a href="mailto:collectivemindslab@gmail.com"
+          >collectivemindslab@gmail.com</a
+        >
+        within 30 days of completing the survey.
+      </p>
+    </div>
+
+    <div style="margin-top: 1em"></div>
+
+    <p>
+      I have read the information provided above and have had the opportunity to
+      get answers to all relevant questions. By clicking "I consent" I indicate
+      my voluntary agreement to participate in this research study.
+    </p>
+
+    {{ formfield 'consent_given' }}
+  </div>
+</div>
+
+{{ next_button }}
+
+<script>
+  const btn = document.getElementById('toggle-btn');
+  const moreText = document.getElementById('more-text');
+  if (btn && moreText) {
+    btn.addEventListener('click', function () {
+      if (moreText.style.display === 'none') {
+        moreText.style.display = 'block';
+        btn.textContent = 'Hide details';
+      } else {
+        moreText.style.display = 'none';
+        btn.textContent = 'Read more';
+      }
+    });
+  }
+</script>
+
+{% endblock %}
